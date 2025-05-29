@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bouncy Ball Game</title>
+  <style>
+    /* Сбрасываем отступы и скрываем скролл */
+    body { margin: 0; overflow: hidden; background: linear-gradient(to bottom, #1e1e30, #2e2e50); position: relative; }
+    /* Канвас занимает весь экран */
+    canvas { display: block; }
+    /* Оверлей экрана окончания игры */
+    #gameOverScreen {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex; justify-content: center; align-items: center;
+      flex-direction: column;
+      color: white; font-family: Arial, sans-serif;
+      font-size: 24px;
+      visibility: hidden;
+    }
+    #restartBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none; border-radius: 5px;
+      background: #00aa00; color: white;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div id="gameOverScreen">
+    <div>Game Over!</div>
+    <div>Your Score: <span id="finalScore"></span></div>
+    <button id="restartBtn">Restart</button>
+  </div>
+<script>
+// ==== ЗВУК И МУЗЫКА из локальной папки audio ====
+const bgMusic = new Audio('audio/bg.mp3');         // фоновая музыка
+bgMusic.loop = true;
+bgMusic.volume = 0.5;
+// эффекты
+const soundJump = new Audio('audio/jump.mp3');     // звук прыжка
+const soundHit  = new Audio('audio/hit.mp3');      // звук попадания
+const soundDeath= new Audio('audio/gameover.mp3'); // звук окончания игры
+// разблокировка автоплей музыки при первом клике
+function unlockAudio() {
+  bgMusic.play().catch(e => console.warn('bgMusic play blocked:', e));
+  document.removeEventListener('keydown', unlockAudio);
+}
+document.addEventListener('keydown', unlockAudio, { once: true });
+
+// ==== ПАРАМЕТРЫ ИГРЫ ====
+const gravity = 0.25;
+const jumpPower = -12;
+const moveSpeed = 3;
+const enemySpeed = 1;
+const groundHeight = 60;
+const reachDistance = 288;
+const playerBaseHP = 5;
+const largeEnemyHP = 2;
+const normalEnemyHP = 1;
+const groundSpawnInterval = 90;
+const minFlyingSpawn = 240;
+const maxFlyingSpawn = 360;
+
+let keys = {}, score = 0, combo = 0, comboTimer = 0, comboDisplay = 0;
+let gameTime = 0, largeEnemyCount = 0, gameOver = false;
+let particles = [], enemies = [], flyingEnemies = [], projectiles = [], hearts = [];
+let spawnTimer = 0, heartTimer = 0, flyingSpawnTimer = 0;
+let flyingSpawnInterval = Math.floor(Math.random() * (maxFlyingSpawn - minFlyingSpawn + 1)) + minFlyingSpawn;
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const overlay = document.getElementById("gameOverScreen");
+const finalScoreElem = document.getElementById("finalScore");
+const restartBtn = document.getElementById("restartBtn");
+
+function showGameOver() {
+  bgMusic.pause();
+  soundDeath.play();
+  finalScoreElem.textContent = score;
+  overlay.style.visibility = 'visible';
+}
+restartBtn.addEventListener('click', () => location.reload());
+
+// ==== КЛАССЫ ==== 
+class Player {
+  constructor() {
+    this.x = canvas.width/2;
+    this.y = canvas.height - groundHeight - 20;
+    this.radius = 20;
+    this.vx = 0; this.vy = 0;
+    this.onGround = false;
+    this.hp = playerBaseHP;
+    this.damageFlash = 0;
+    this.invincible = 0;
+  }
+  update() {
+    if (keys.ArrowLeft) this.vx = -moveSpeed;
+    else if (keys.ArrowRight) this.vx = moveSpeed;
+    else this.vx = 0;
+    if (keys.ArrowUp && this.onGround) {
+      this.vy = jumpPower;
+      this.onGround = false;
+      soundJump.play();
+    }
+    this.vy += gravity;
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.y + this.radius > canvas.height - groundHeight) {
+      this.y = canvas.height - groundHeight - this.radius;
+      this.vy = 0;
+      this.onGround = true;
+      combo = 0;
+    }
+    if (this.damageFlash > 0) this.damageFlash--;
+    if (this.invincible > 0) this.invincible--;
+  }
+  draw() {
+    if (this.invincible > 0 && Math.floor(this.invincible/5) % 2 === 0) return;
+    ctx.save();
+    ctx.shadowColor = this.damageFlash>0 ? '#ff0000' : '#00ff00';
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+    ctx.fillStyle = this.damageFlash>0 ? '#ff0000' : '#00ff00';
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+class Enemy {
+  constructor(x, dir, type='normal') {
+    this.x = x;
+    this.y = canvas.height - groundHeight;
+    this.type = type;
+    this.hp = (type==='large') ? largeEnemyHP : normalEnemyHP;
+    this.width = (type==='large') ? 50 : 30;
+    this.height= (type==='large') ? 50 : 30;
+    this.speed = dir * (type==='fast'?enemySpeed*2:type==='large'?enemySpeed*0.5:enemySpeed);
+    this.alive = true;
+    this.color = (type==='fast')?'#ffff00':(type==='large')?'#9933ff':'#ff4444';
+  }
+  update() { if(this.alive) this.x += this.speed; }
+  draw() {
+    if(!this.alive) return;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y - this.height, this.width, this.height);
+  }
+}
+
+class FlyingEnemy {
+  constructor(x, dir) {
+    this.x = x;
+    this.y = canvas.height - groundHeight - 150;
+    this.size = 30;
+    this.direction = dir;
+    this.stopped = false;
+    this.alive = true;
+    this.color = '#ff8800';
+    this.shotTimer = 0;
+    const minX = Math.max(this.size/2, player.x - reachDistance);
+    const maxX = Math.min(canvas.width - this.size/2, player.x + reachDistance);
+    this.stopX = Math.random() * (maxX - minX) + minX;
+  }
+  update() {
+    if(!this.stopped) {
+      this.x += this.direction;
+      if((this.direction>0 && this.x>=this.stopX)||(this.direction<0 && this.x<=this.stopX)) this.stopped = true;
+    }
+    this.shotTimer++;
+    if(this.stopped && this.shotTimer > 180) {
+      this.shotTimer = 0;
+      soundHit.play();
+      projectiles.push(new Projectile(this.x, this.y, player.x, player.y));
+    }
+  }
+  draw() {
+    if(!this.alive) return;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y - this.size/2);
+    ctx.lineTo(this.x - this.size/2, this.y + this.size/2);
+    ctx.lineTo(this.x + this.size/2, this.y + this.size/2);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+class Projectile {
+  constructor(x,y,tx,ty) {
+    this.x = x; this.y = y;
+    this.size = 10;
+    const dx = tx - x, dy = ty - y;
+    const d = Math.hypot(dx, dy);
+    this.vx = dx/d * 4;
+    this.vy = dy/d * 4;
+    this.alive = true;
+    this.color = '#ff8800';
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    const dx = player.x - this.x, dy = player.y - this.y;
+    if(Math.hypot(dx, dy) < player.radius + this.size/2 && player.invincible===0) {
+      this.alive = false;
+      player.hp--;
+      player.damageFlash = 20;
+      player.invincible = 30;
+      if(player.hp>0) soundHit.play();
+      else soundDeath.play();
+    }
+    if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height) this.alive = false;
+  }
+  draw() {
+    if(!this.alive) return;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y - this.size/2);
+    ctx.lineTo(this.x - this.size/2, this.y + this.size/2);
+    ctx.lineTo(this.x + this.size/2, this.y + this.size/2);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+class Particle {
+  constructor(x,y,color) { this.x=x; this.y=y; this.size=Math.random()*6+4; this.vx=(Math.random()-0.5)*4; this.vy=-Math.random()*4; this.color=color; this.life=60; }
+  update() { this.vy += gravity; this.x += this.vx; this.y += this.vy; this.life--; }
+  draw() { if(this.life<=0) return; ctx.save(); ctx.globalAlpha = this.life/60; ctx.fillStyle = this.color; ctx.fillRect(this.x,this.y,this.size,this.size); ctx.restore(); }
+}
+
+class Heart {
+  constructor() { this.x=Math.random()*(canvas.width-30)+15; this.y=canvas.height-groundHeight-20; this.radius=15; this.collected=false; this.pulse=0; }
+  update() { this.pulse+=0.1; const dx=player.x-this.x, dy=player.y-this.y; if(Math.hypot(dx,dy)<player.radius+this.radius) { this.collected=true; if(player.hp<playerBaseHP) player.hp++; }}
+  draw() { if(this.collected) return; const scale=1+0.1*Math.sin(this.pulse); ctx.save(); ctx.fillStyle='#ff66cc'; ctx.beginPath(); ctx.arc(this.x,this.y,this.radius*scale,0,Math.PI*2); ctx.fill(); ctx.restore(); }
+}
+
+function drawGround() { const g=ctx.createLinearGradient(0,canvas.height-groundHeight,0,canvas.height); g.addColorStop(0,'#3366ff'); g.addColorStop(1,'#000066'); ctx.fillStyle=g; ctx.fillRect(0,canvas.height-groundHeight,canvas.width,groundHeight); }
+function drawUI() { ctx.fillStyle='white'; ctx.font='bold 32px Arial'; ctx.fillText('Score:'+score,20,40); for(let i=0;i<player.hp;i++){ ctx.fillStyle='red'; ctx.beginPath(); ctx.arc(30+i*40,80,15,0,Math.PI*2); ctx.fill(); } if(comboDisplay>0){ ctx.save(); ctx.globalAlpha=Math.min(1,comboDisplay/30); ctx.fillStyle='yellow'; ctx.font='bold 48px Arial'; ctx.fillText('COMBO x'+combo,canvas.width/2-100,120); ctx.restore(); }}
+function spawnParticles(e) { const cx=e.x+((e.width||e.size)/2), cy=e.y-((e.height||e.size)/2); for(let i=0;i<20;i++) particles.push(new Particle(cx,cy,e.color)); }
+
+let player=new Player();
+function gameLoop(){ if(gameOver) return; ctx.clearRect(0,0,canvas.width,canvas.height); drawGround(); particles.forEach(p=>{p.update();p.draw();}); particles=particles.filter(p=>p.life>0); flyingSpawnTimer++; if(gameTime>900&&flyingSpawnTimer>flyingSpawnInterval){ flyingSpawnTimer=0; flyingSpawnInterval=Math.floor(Math.random()*(maxFlyingSpawn-minFlyingSpawn+1))+minFlyingSpawn; flyingEnemies.push(new FlyingEnemy(-30,1)); flyingEnemies.push(new FlyingEnemy(canvas.width+30,-1)); } flyingEnemies.forEach(f=>{ f.update(); f.draw(); const dx=player.x-f.x, dy=player.y-f.y; if(f.alive&&Math.hypot(dx,dy)<player.radius+f.size/2){ f.alive=false; spawnParticles(f); score++; }}); flyingEnemies=flyingEnemies.filter(f=>f.alive); spawnTimer++; if(spawnTimer>groundSpawnInterval){ spawnTimer=0; let side=Math.random()<0.5?-30:canvas.width+30, dir=side<0?1:-1, type='normal'; if(gameTime>600&&Math.random()<0.2) type='fast'; if(gameTime>1200&&largeEnemyCount>=10){ type='large'; largeEnemyCount=0; } else largeEnemyCount++; enemies.push(new Enemy(side,dir,type)); } enemies.forEach(e=>{ e.update(); e.draw(); const dx=player.x-(e.x+e.width/2), dy=player.y-(e.y-e.height/2), dist=Math.hypot(dx,dy); if(e.alive&&dist<player.radius+e.width/2){ if(player.vy>0&&player.y<e.y){ e.hp--; player.vy=jumpPower/1.5; if(e.hp<=0){ e.alive=false; spawnParticles(e); combo++; score+=combo; comboTimer=180; comboDisplay=180; } else if(e.type==='large') e.color='#cc66ff'; } else { if(player.invincible===0){ player.hp--; player.damageFlash=20; player.invincible=30; soundHit.play(); } e.alive=false; spawnParticles(e); if(player.hp<=0){ gameOver=true; showGameOver(); } } } }); enemies=enemies.filter(e=>e.alive); heartTimer++; if(heartTimer>300&&player.hp<playerBaseHP){ hearts.push(new Heart()); heartTimer=0; } hearts.forEach(h=>{ h.update(); h.draw(); }); hearts=hearts.filter(h=>!h.collected); projectiles.forEach(p=>{ p.update(); p.draw(); }); projectiles=projectiles.filter(p=>p.alive); player.update(); player.draw(); gameTime++; if(comboTimer>0) comboTimer--; else combo=0; if(comboDisplay>0) comboDisplay--; drawUI(); requestAnimationFrame(gameLoop); } document.addEventListener('keydown', e=>{ keys[e.key]=true; unlockAudio(); }); document.addEventListener('keyup', e=>keys[e.key]=false); gameLoop();
+</script>
+</body>
+</html>
