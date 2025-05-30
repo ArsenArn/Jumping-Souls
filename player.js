@@ -43,15 +43,15 @@ class Player {
 let speedMul = 1 + 0.05 * (this.speedBoost || 0);
 let jumpMul = 1 + 0.05 * (this.jumpBoost || 0);
 
-if (keys.ArrowLeft || keys.a || keys.A) {
+if (keys.ArrowLeft || keys.a || keys.A || keys['ф'] || keys['Ф'] ) {
   this.vx = -moveSpeed * speedMul;
-} else if (keys.ArrowRight || keys.d || keys.D) {
+} else if (keys.ArrowRight || keys.d || keys.D || keys['в'] || keys['В'] ) {
   this.vx = moveSpeed * speedMul;
 } else {
   this.vx = 0;
 }
 
-if ((keys.ArrowUp || keys.w || keys.W) && this.onGround) {
+if ((keys.ArrowUp || keys.w || keys.W || keys['ц'] || keys['Ц'] || keys[' '] ) && this.onGround) {
   this.vy = jumpPower * jumpMul;
   this.onGround = false;
   soundJump.play();
