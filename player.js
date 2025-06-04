@@ -12,23 +12,29 @@ import { Rocket, spawnParticles } from './enemies.js';
 
 class Player {
   constructor() {
+    // Начальная позиция игрока на экране
     this.x = canvas.width/2;
     this.y = canvas.height - groundHeight - 20;
+    // Размер круга, которым рисуется игрок
     this.radius = 20;
     this.vx = 0; this.vy = 0;
     this.onGround = false;
+    // Стартовое здоровье игрока
     this.hp = playerBaseHP;
     this.maxHP = playerBaseHP;
     this.damageFlash = 0;
     this.invincible = 0;
+    // Уровень автострельбы (0 отключает навык)
     this.autoFire = 0;
     this.autoFireTimer = 0;
     this.autoFireDelayTimer = 0;
     this.healBoost = 0;
+    // Параметры щита
     this.hasShield = false;
     this.shieldCooldown = 0;
     this.shieldActive = false;
     this.shieldLevel = 0;
+    // Параметры ракетной атаки
     this.rocketLevel = 0;
     this.rocketCooldown = 0;  // Таймер для запуска серии
     this.rocketBurst = 0;     // Сколько ракет осталось в очереди
@@ -151,10 +157,12 @@ if (this.rocketLevel > 0 && !state.gameOver && !state.upgradeMenuActive) {
 
   }
   getAutoFireCooldown() {
-  return 3.0; // 3 секунды
-}
+    // Задержка между сериями автострельбы в секундах
+    return 3.0; // 3 секунды
+  }
 getShieldCooldown() {
   let shieldLevel = this.shieldLevel || 1;
+  // Время восстановления щита с учётом уровня навыка
   return Math.max(10 - shieldLevel, 5); // минимум 5 секунд
 }
 

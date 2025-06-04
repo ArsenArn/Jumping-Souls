@@ -20,8 +20,11 @@ document.addEventListener('keydown', unlockAudio, { once: true });
 // ==== ПАРАМЕТРЫ ИГРЫ ====
 
 
+// Счётчики времени игры и количества больших врагов
 let gameTime = 0, largeEnemyCount = 0;
+// Таймеры появления разных объектов (в кадрах)
 let spawnTimer = 0, heartTimer = 0, flyingSpawnTimer = 0, blueSpawnTimer = 0;
+// Текущий интервал между летающими врагами
 let flyingSpawnInterval = Math.floor(Math.random() * (maxFlyingSpawn - minFlyingSpawn + 1)) + minFlyingSpawn;
 
 const upgradeMenu = document.getElementById('upgradeMenu');
