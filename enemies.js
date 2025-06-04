@@ -36,6 +36,57 @@ class Enemy {
   }
 }
 
+// === Новый тип врага: прыгающий синий квадрат ===
+class BlueEnemy {
+  constructor(x, dir) {
+    this.x = x;
+    this.y = canvas.height - groundHeight;
+    this.dir = dir;
+    this.width = 30;
+    this.height = 30;
+    this.color = '#4444ff';
+    this.hp = normalEnemyHP;
+    this.alive = true;
+    this.vx = 0;
+    this.vy = 0;
+    this.onGround = true;
+    this.jumpTimer = 0;
+    this.jumpCooldown = 60; // кадры
+  }
+  update() {
+    if (!this.alive || state.upgradeMenuActive) return;
+
+    if (this.onGround) {
+      this.jumpTimer++;
+      if (this.jumpTimer >= this.jumpCooldown) {
+        this.jumpTimer = 0;
+        const jumpHeight = canvas.height * 0.25;
+        this.vy = -Math.sqrt(2 * gravity * jumpHeight);
+        this.vx = this.dir * (canvas.width / 6) / this.jumpCooldown;
+        this.onGround = false;
+      }
+    } else {
+      this.vy += gravity;
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.y >= canvas.height - groundHeight) {
+        this.y = canvas.height - groundHeight;
+        this.vy = 0;
+        this.vx = 0;
+        this.onGround = true;
+      }
+    }
+    if (this.x + this.width < -40 || this.x > canvas.width + 40) {
+      this.alive = false;
+    }
+  }
+  draw() {
+    if (!this.alive) return;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y - this.height, this.width, this.height);
+  }
+}
+
 class FlyingEnemy {
   constructor(x, dir, player) {
     this.x = x;
@@ -283,4 +334,4 @@ function spawnParticles(e) {
   for(let i=0;i<20;i++) particles.push(new Particle(cx,cy,e.color));
 }
 
-export { Enemy, FlyingEnemy, Projectile, Heart, Rocket, Particle, RocketParticle, spawnParticles };
+export { Enemy, BlueEnemy, FlyingEnemy, Projectile, Heart, Rocket, Particle, RocketParticle, spawnParticles };
