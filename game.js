@@ -9,7 +9,7 @@ import { state, gameVars,
 } from './globals.js';
 import { UPGRADE_POOL, skillLevels, renderSkillsUI, openUpgradeMenu, getRandomUpgrades } from './upgrades.js';
 import { Player, PlayerProjectile } from './player.js';
-import { Enemy, FlyingEnemy, Projectile, Heart, Rocket, Particle, RocketParticle, spawnParticles } from './enemies.js';
+import { Enemy, BlueEnemy, FlyingEnemy, Projectile, Heart, Rocket, Particle, RocketParticle, spawnParticles } from './enemies.js';
 
 function unlockAudio() {
   bgMusic.play().catch(e => console.warn('bgMusic play blocked:', e));
@@ -21,7 +21,7 @@ document.addEventListener('keydown', unlockAudio, { once: true });
 
 
 let gameTime = 0, largeEnemyCount = 0;
-let spawnTimer = 0, heartTimer = 0, flyingSpawnTimer = 0;
+let spawnTimer = 0, heartTimer = 0, flyingSpawnTimer = 0, blueSpawnTimer = 0;
 let flyingSpawnInterval = Math.floor(Math.random() * (maxFlyingSpawn - minFlyingSpawn + 1)) + minFlyingSpawn;
 
 const upgradeMenu = document.getElementById('upgradeMenu');
@@ -137,6 +137,12 @@ function gameLoop(){
       if(gameTime>1200&&largeEnemyCount>=10){ type='large'; largeEnemyCount=0; }
       else largeEnemyCount++;
       enemies.push(new Enemy(side,dir,type));
+    }
+    blueSpawnTimer++;
+    if(gameTime>600 && blueSpawnTimer>groundSpawnInterval*2){
+      blueSpawnTimer=0;
+      let side=Math.random()<0.5?-30:canvas.width+30, dir=side<0?1:-1;
+      enemies.push(new BlueEnemy(side,dir));
     }
     enemies.forEach(e=>{
       e.update(); e.draw();
