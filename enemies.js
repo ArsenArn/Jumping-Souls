@@ -51,7 +51,7 @@ class BlueEnemy {
     this.vy = 0;
     this.onGround = true;
     this.jumpTimer = 0;
-    this.jumpCooldown = 60; // кадры
+    this.jumpCooldown = 120; // кадры
   }
   update() {
     if (!this.alive || state.upgradeMenuActive) return;
