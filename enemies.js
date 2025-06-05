@@ -112,9 +112,16 @@ class FlyingEnemy {
     this.alive = false;
 }
     this.shotTimer++;
-    if(this.stopped && this.shotTimer > 180 && !state.upgradeMenuActive) {
+    if(this.stopped && this.shotTimer > 360 && !state.upgradeMenuActive) {
       this.shotTimer = 0;
       projectiles.push(new Projectile(this.x, this.y, this.player.x, this.player.y, this.player));
+      // После выстрела выбираем новую точку и немного перемещаемся
+      const offset = (Math.random()*2 - 1) * canvas.width/6;
+      let newX = this.x + offset;
+      newX = Math.max(this.size/2, Math.min(canvas.width - this.size/2, newX));
+      this.stopX = newX;
+      this.direction = (this.stopX > this.x) ? 1 : -1;
+      this.stopped = false;
     }
   }
   draw() {
