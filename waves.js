@@ -9,18 +9,18 @@ const ENEMY_WAVES = [
   // enemy: enemy | enemy_fast | enemy_large | enemy_blue | enemy_flying
   // count: number of enemies in the wave
   // enemy_flying spawns from both sides; use even counts for perfect symmetry
-  { time: 2, enemy: enemy, count: 8 },
+  { time: 2, enemy: enemy_large, count: 8 },
   { time: 6, enemy: enemy, count: 8 },
   { time: 9, enemy: enemy, count: 10 },
-  { time: 10, enemy: enemy_blue, count: 2 },
+  { time: 10, enemy: enemy_blue, count: 20 },
   { time: 12, enemy: enemy, count: 5 },
   { time: 15, enemy: enemy_blue, count: 3 },
   { time: 18, enemy: enemy, count: 6 },
-  { time: 20, enemy: enemy_fast, count: 2 },
+  { time: 20, enemy: enemy_fast, count: 20 },
   { time: 22, enemy: enemy, count: 6 },
   { time: 24, enemy: enemy_blue, count: 3 },
   { time: 27, enemy: enemy, count: 7 },
-  { time: 30, enemy: enemy_flying, count: 2 },
+  { time: 30, enemy: enemy_flying, count: 20 },
   { time: 32, enemy: enemy_fast, count: 3 },
   { time: 35, enemy: enemy, count: 7 },
   { time: 38, enemy: enemy_blue, count: 4 },

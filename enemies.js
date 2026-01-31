@@ -26,7 +26,7 @@ class Enemy {
   update() {
     if (this.alive && !state.upgradeMenuActive) {
       this.x += this.speed;
-      if (this.x + this.width < 0 || this.x > canvas.width) {
+      if (this.x + this.width < -40 || this.x > canvas.width + 40) {
         this.alive = false;
       }
     }

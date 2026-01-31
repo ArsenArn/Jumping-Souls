@@ -75,9 +75,9 @@ function getSpawnIntervalFrames(enemyType) {
 
 
 
-function spawnGroundEnemy(typeKey) {
+function spawnGroundEnemy(typeKey, sideOverride) {
 
-  const side = Math.random() < 0.5 ? -30 : canvas.width + 30;
+  const side = sideOverride ?? (Math.random() < 0.5 ? -30 : canvas.width + 30);
 
   const dir = side < 0 ? 1 : -1;
 
@@ -87,13 +87,33 @@ function spawnGroundEnemy(typeKey) {
 
 
 
-function spawnBlueEnemy() {
+function spawnBlueEnemy(sideOverride) {
 
-  const side = Math.random() < 0.5 ? -30 : canvas.width + 30;
+  const side = sideOverride ?? (Math.random() < 0.5 ? -30 : canvas.width + 30);
 
   const dir = side < 0 ? 1 : -1;
 
   enemies.push(new BlueEnemy(side, dir));
+
+}
+
+
+
+function spawnGroundEnemyPair(typeKey) {
+
+  spawnGroundEnemy(typeKey, -30);
+
+  spawnGroundEnemy(typeKey, canvas.width + 30);
+
+}
+
+
+
+function spawnBlueEnemyPair() {
+
+  spawnBlueEnemy(-30);
+
+  spawnBlueEnemy(canvas.width + 30);
 
 }
 
@@ -115,11 +135,27 @@ function spawnWaveEnemy(enemyType, remaining) {
 
     case 'enemy':
 
+      if (remaining >= 2) {
+
+        spawnGroundEnemyPair('normal');
+
+        return 2;
+
+      }
+
       spawnGroundEnemy('normal');
 
       return 1;
 
     case 'enemy_fast':
+
+      if (remaining >= 2) {
+
+        spawnGroundEnemyPair('fast');
+
+        return 2;
+
+      }
 
       spawnGroundEnemy('fast');
 
@@ -127,11 +163,27 @@ function spawnWaveEnemy(enemyType, remaining) {
 
     case 'enemy_large':
 
+      if (remaining >= 2) {
+
+        spawnGroundEnemyPair('large');
+
+        return 2;
+
+      }
+
       spawnGroundEnemy('large');
 
       return 1;
 
     case 'enemy_blue':
+
+      if (remaining >= 2) {
+
+        spawnBlueEnemyPair();
+
+        return 2;
+
+      }
 
       spawnBlueEnemy();
 
