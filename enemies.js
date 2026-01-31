@@ -8,6 +8,7 @@ import { state, gameVars,
   soundHit, soundDeath, soundEnemyDie, soundHeal, soundLevelUp, bgMusic,
 } from './globals.js';
 import { showGameOver } from './game.js';
+import { drawVisualCentered, drawVisualTopLeft } from './visuals.js';
 
 class Enemy {
   constructor(x, dir, type='normal') {
@@ -31,8 +32,23 @@ class Enemy {
   }
   draw() {
     if(!this.alive) return;
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y - this.height, this.width, this.height);
+    const visualKey = this.type === 'fast'
+      ? 'enemy_fast'
+      : this.type === 'large'
+        ? 'enemy_large'
+        : 'enemy';
+    const drawn = drawVisualTopLeft(
+      ctx,
+      visualKey,
+      this.x,
+      this.y - this.height,
+      this.width,
+      this.height
+    );
+    if (!drawn) {
+      ctx.fillStyle = this.color;
+      ctx.fillRect(this.x, this.y - this.height, this.width, this.height);
+    }
   }
 }
 
@@ -82,8 +98,18 @@ class BlueEnemy {
   }
   draw() {
     if (!this.alive) return;
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y - this.height, this.width, this.height);
+    const drawn = drawVisualTopLeft(
+      ctx,
+      'enemy_blue',
+      this.x,
+      this.y - this.height,
+      this.width,
+      this.height
+    );
+    if (!drawn) {
+      ctx.fillStyle = this.color;
+      ctx.fillRect(this.x, this.y - this.height, this.width, this.height);
+    }
   }
 }
 
@@ -126,13 +152,23 @@ class FlyingEnemy {
   }
   draw() {
     if(!this.alive) return;
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.moveTo(this.x, this.y - this.size/2);
-    ctx.lineTo(this.x - this.size/2, this.y + this.size/2);
-    ctx.lineTo(this.x + this.size/2, this.y + this.size/2);
-    ctx.closePath();
-    ctx.fill();
+    const drawn = drawVisualCentered(
+      ctx,
+      'enemy_flying',
+      this.x,
+      this.y,
+      this.size,
+      this.size
+    );
+    if (!drawn) {
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y - this.size/2);
+      ctx.lineTo(this.x - this.size/2, this.y + this.size/2);
+      ctx.lineTo(this.x + this.size/2, this.y + this.size/2);
+      ctx.closePath();
+      ctx.fill();
+    }
   }
 }
 

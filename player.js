@@ -8,6 +8,7 @@ import { state, gameVars,
   soundHit, soundDeath, soundEnemyDie, soundHeal, soundLevelUp, bgMusic,
 } from './globals.js';
 import { Rocket, spawnParticles } from './enemies.js';
+import { drawVisualCentered } from './visuals.js';
 
 
 class Player {
@@ -169,12 +170,24 @@ getShieldCooldown() {
   draw() {
     if (this.invincible > 0 && Math.floor(this.invincible/5) % 2 === 0) return;
     ctx.save();
-    ctx.shadowColor = this.damageFlash>0 ? '#ff0000' : '#00ff00';
-    ctx.shadowBlur = 20;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-    ctx.fillStyle = this.damageFlash>0 ? '#ff0000' : '#00ff00';
-    ctx.fill();
+    const shadowColor = this.damageFlash>0 ? '#ff0000' : '#00ff00';
+    const playerDrawn = drawVisualCentered(
+      ctx,
+      'player',
+      this.x,
+      this.y,
+      this.radius * 2,
+      this.radius * 2,
+      { shadowColor, shadowBlur: 20 }
+    );
+    if (!playerDrawn) {
+      ctx.shadowColor = shadowColor;
+      ctx.shadowBlur = 20;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+      ctx.fillStyle = this.damageFlash>0 ? '#ff0000' : '#00ff00';
+      ctx.fill();
+    }
     if (this.hasShield && this.shieldActive) {
       ctx.save();
       ctx.globalAlpha = 0.38 + 0.3*Math.sin(Date.now()/140);
