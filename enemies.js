@@ -7,7 +7,6 @@ import { state, gameVars,
   minFlyingSpawn, maxFlyingSpawn, soundJump, 
   soundHit, soundDeath, soundEnemyDie, soundHeal, soundLevelUp, bgMusic,
 } from './globals.js';
-import { showGameOver } from './game.js';
 import { drawVisualCentered, drawVisualTopLeft } from './visuals.js';
 
 const enemySizeScale = 1.4;
@@ -202,7 +201,6 @@ class Projectile {
       soundHit.play();
       if(this.player.hp <= 0) {
         state.gameOver = true;
-        showGameOver();
       }
     }
     this.alive = false;
