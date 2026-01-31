@@ -10,14 +10,16 @@ import { state, gameVars,
 import { showGameOver } from './game.js';
 import { drawVisualCentered, drawVisualTopLeft } from './visuals.js';
 
+const enemySizeScale = 1.4;
+
 class Enemy {
   constructor(x, dir, type='normal') {
     this.x = x;
     this.y = canvas.height - groundHeight;
     this.type = type;
     this.hp = (type==='large') ? largeEnemyHP : normalEnemyHP;
-    this.width = (type==='large') ? 50 : 30;
-    this.height= (type==='large') ? 50 : 30;
+    this.width = (type==='large') ? 50 * enemySizeScale : 30 * enemySizeScale;
+    this.height= (type==='large') ? 50 * enemySizeScale : 30 * enemySizeScale;
     this.speed = dir * (type==='fast'?enemySpeed*2:type==='large'?enemySpeed*0.5:enemySpeed);
     this.alive = true;
     this.color = (type==='fast')?'#ffff00':(type==='large')?'#9933ff':'#ff4444';
@@ -58,8 +60,8 @@ class BlueEnemy {
     this.x = x;
     this.y = canvas.height - groundHeight;
     this.dir = dir;
-    this.width = 30;
-    this.height = 30;
+    this.width = 30 * enemySizeScale;
+    this.height = 30 * enemySizeScale;
     this.color = '#4444ff';
     this.hp = normalEnemyHP;
     this.alive = true;
@@ -117,7 +119,7 @@ class FlyingEnemy {
   constructor(x, dir, player) {
     this.x = x;
     this.y = canvas.height - groundHeight - 150;
-    this.size = 30;
+    this.size = 30 * enemySizeScale;
     this.direction = dir;
     this.stopped = false;
     this.alive = true;
