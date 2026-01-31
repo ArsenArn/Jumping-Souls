@@ -36,14 +36,27 @@ canvas.height = window.innerHeight;
 const overlay = document.getElementById("gameOverScreen");
 const finalScoreElem = document.getElementById("finalScore");
 const restartBtn = document.getElementById("restartBtn");
+const pauseMenu = document.getElementById("pauseMenu");
+const continueBtn = document.getElementById("continueBtn");
 
 function showGameOver() {
   bgMusic.pause();
   soundDeath.play();
+  state.paused = false;
+  pauseMenu.classList.remove('visible');
   finalScoreElem.textContent = gameVars.score;
   overlay.style.visibility = 'visible';
 }
 restartBtn.addEventListener('click', () => location.reload());
+continueBtn.addEventListener('click', () => setPaused(false));
+
+function setPaused(paused) {
+  state.paused = paused;
+  pauseMenu.classList.toggle('visible', paused);
+  if (paused) {
+    Object.keys(keys).forEach(key => delete keys[key]);
+  }
+}
 
 function drawGround() {
   const drawn = drawVisualTopLeft(
@@ -141,7 +154,7 @@ function gameLoop(){
   drawBackground();
   drawGround();
 
-  if (!state.upgradeMenuActive && !state.gameOver) {
+  if (!state.upgradeMenuActive && !state.gameOver && !state.paused) {
     // --- Основная логика игры ---
     particles.forEach(p=>{p.update();p.draw();});
     particles.splice(0, particles.length, ...particles.filter(p=>p.life>0));
@@ -227,7 +240,7 @@ function gameLoop(){
       openUpgradeMenu(player);
     }
   } else {
-    // Отрисуем всё «замороженным» + меню прокачки
+    // Отрисуем всё «замороженным» + меню прокачки/паузы
     particles.forEach(p=>p.draw());
     flyingEnemies.forEach(f=>f.draw());
     enemies.forEach(e=>e.draw());
@@ -241,6 +254,13 @@ function gameLoop(){
 }
 
 document.addEventListener('keydown', e=>{
+  if (e.key === 'Escape' && !e.repeat) {
+    if (!state.gameOver && !state.upgradeMenuActive) {
+      setPaused(!state.paused);
+    }
+    unlockAudio();
+    return;
+  }
   keys[e.key]=true; unlockAudio();
 });
 document.addEventListener('keyup', e=>keys[e.key]=false);

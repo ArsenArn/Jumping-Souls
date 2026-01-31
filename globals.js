@@ -65,6 +65,7 @@ const maxFlyingSpawn = 360;
 let state = {
   gameOver: false,
   upgradeMenuActive: false,
+  paused: false,
   // сюда можно добавить еще любые флаги!
 };
 
