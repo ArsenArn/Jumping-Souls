@@ -157,7 +157,32 @@ function gameLoop(){
       f.update(); f.draw();
       const dx=player.x-f.x, dy=player.y-f.y;
       if(f.alive && Math.hypot(dx,dy)<player.radius+f.size/2){
-        f.alive=false; spawnParticles(f); soundEnemyDie.play(); gameVars.score++;
+        if (player.vy > 0 && player.y < f.y) {
+          f.alive = false;
+          player.vy = jumpPower / 2;
+          spawnParticles(f);
+          soundEnemyDie.play();
+          gameVars.score++;
+        } else {
+          if (player.invincible === 0) {
+            if (player.hasShield && player.shieldActive) {
+              player.shieldActive = false;
+              player.shieldCooldown = 300;
+            } else {
+              player.hp--;
+              player.damageFlash = 20;
+              player.invincible = 30;
+              soundHit.play();
+            }
+          }
+          f.alive = false;
+          spawnParticles(f);
+          soundEnemyDie.play();
+          if (player.hp <= 0) {
+            state.gameOver = true;
+            showGameOver();
+          }
+        }
       }
     });
     flyingEnemies.splice(0, flyingEnemies.length, ...flyingEnemies.filter(f => f.alive));
