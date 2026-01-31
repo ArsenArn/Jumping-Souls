@@ -10,6 +10,7 @@ import { state, gameVars,
 import { UPGRADE_POOL, skillLevels, renderSkillsUI, openUpgradeMenu, getRandomUpgrades } from './upgrades.js';
 import { Player, PlayerProjectile } from './player.js';
 import { Enemy, BlueEnemy, FlyingEnemy, Projectile, Heart, Rocket, Particle, RocketParticle, spawnParticles } from './enemies.js';
+import { drawVisualTopLeft } from './visuals.js';
 
 function unlockAudio() {
   bgMusic.play().catch(e => console.warn('bgMusic play blocked:', e));
@@ -45,11 +46,39 @@ function showGameOver() {
 restartBtn.addEventListener('click', () => location.reload());
 
 function drawGround() {
-  const g=ctx.createLinearGradient(0,canvas.height-groundHeight,0,canvas.height);
-  g.addColorStop(0,'#3366ff');
-  g.addColorStop(1,'#000066');
-  ctx.fillStyle=g;
-  ctx.fillRect(0,canvas.height-groundHeight,canvas.width,groundHeight);
+  const drawn = drawVisualTopLeft(
+    ctx,
+    'ground',
+    0,
+    canvas.height - groundHeight,
+    canvas.width,
+    groundHeight
+  );
+  if (!drawn) {
+    const g=ctx.createLinearGradient(0,canvas.height-groundHeight,0,canvas.height);
+    g.addColorStop(0,'#3366ff');
+    g.addColorStop(1,'#000066');
+    ctx.fillStyle=g;
+    ctx.fillRect(0,canvas.height-groundHeight,canvas.width,groundHeight);
+  }
+}
+
+function drawBackground() {
+  const drawn = drawVisualTopLeft(
+    ctx,
+    'background',
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+  if (!drawn) {
+    const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    g.addColorStop(0, '#0b163a');
+    g.addColorStop(1, '#1a2554');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 }
 
 function drawUI() {
@@ -109,6 +138,7 @@ function gameLoop(){
   lastFrameTime = now;
   realElapsed += delta;
   ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawBackground();
   drawGround();
 
   if (!state.upgradeMenuActive && !state.gameOver) {
