@@ -92,7 +92,7 @@ for(let i = 0; i < player.maxHP; i++) {
   ctx.globalAlpha=0.6;
   ctx.font='20px Arial';
   ctx.fillStyle='#3ef5ff';
-  ctx.fillText('До уровня: '+Math.max(0,gameVars.nextLevelScore-gameVars.score),20,170);
+  ctx.fillText('Experience to level: '+Math.max(0,gameVars.nextLevelScore-gameVars.score),20,170);
   ctx.restore();
 }
 
