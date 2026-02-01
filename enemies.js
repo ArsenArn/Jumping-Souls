@@ -10,7 +10,7 @@
 } from './globals.js';
 import { drawVisualCentered, drawVisualTopLeft } from './visuals.js';
 
-const enemySizeScale = 1.4;
+const enemySizeScale = 1.75;
 
 class Enemy {
   constructor(x, dir, type='normal') {

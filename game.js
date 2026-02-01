@@ -30,11 +30,30 @@ import { ENEMY_WAVES } from './waves.js';
 
 const startMenu = document.getElementById("startMenu");
 const startBtn = document.getElementById("startBtn");
+const storyBtn = document.getElementById("storyBtn");
 const menuSoundToggle = document.getElementById("menuSoundToggle");
 const menuMusicToggle = document.getElementById("menuMusicToggle");
 const skillsUI = document.getElementById("skillsUI");
 const characterSelect = document.getElementById("characterSelect");
 const characterCards = document.querySelectorAll(".character-card");
+const storyOverlay = document.getElementById("storyOverlay");
+const storyImage = document.getElementById("storyImage");
+const storyCaption = document.getElementById("storyCaption");
+const storyNextBtn = document.getElementById("storyNextBtn");
+
+const STORY_SLIDES = [
+  { id: 'story1', caption: 'He died. An ordinary day. An ordinary ending.' },
+  { id: 'story2', caption: 'Awakening was different. Not a body. Not a world. Only form, color, and emptiness.' },
+  { id: 'story3', caption: 'The geometric world knows no people. There are only figures here. And masks.' },
+  { id: 'story4', caption: 'Masks are vessels of power. You can inhabit them. Through them, you can fight. Through them, you can survive.' },
+  { id: 'story5', caption: 'Now he is a spirit. And every battle is a step toward the exit or toward oblivion.' },
+];
+const storyAudio = STORY_SLIDES.map(slide => new Audio(`audio/story/${slide.id}.mp3`));
+storyAudio.forEach(a => { a.preload = 'auto'; });
+let storyIndex = 0;
+let storyActive = false;
+const MENU_MUSIC_BASE_VOLUME = 0.5;
+const MENU_MUSIC_STORY_VOLUME = 0.2;
 
 let audioUnlocked = false;
 function unlockAudio() {
@@ -68,6 +87,7 @@ const CHARACTER_PRESETS = {
 
 function openCharacterSelect() {
   if (!state.menuActive) return;
+  if (storyActive) return;
   state.characterSelectActive = true;
   if (startMenu) startMenu.classList.add('hidden');
   if (characterSelect) characterSelect.classList.remove('hidden');
@@ -76,13 +96,72 @@ function openCharacterSelect() {
 function chooseCharacter(characterId) {
   const preset = CHARACTER_PRESETS[characterId];
   if (!preset) return;
+  if (storyActive) return;
   state.selectedCharacter = characterId;
   player = new Player(preset);
   startGame();
 }
 
+function stopStoryAudio() {
+  storyAudio.forEach(a => {
+    a.pause();
+    try { a.currentTime = 0; } catch (e) {}
+  });
+}
+
+function playStoryAudio(index) {
+  if (!audioState.musicEnabled) return;
+  const audio = storyAudio[index];
+  if (!audio) return;
+  audio.play().catch(() => {});
+}
+
+function setStorySlide(index) {
+  storyIndex = index;
+  const slide = STORY_SLIDES[storyIndex];
+  if (!slide) return;
+  if (storyImage) storyImage.src = `visuals/story/${slide.id}.png`;
+  if (storyCaption) storyCaption.textContent = slide.caption;
+  stopStoryAudio();
+  playStoryAudio(storyIndex);
+}
+
+function openStory() {
+  if (!state.menuActive) return;
+  if (state.characterSelectActive) return;
+  storyActive = true;
+  if (startMenu) startMenu.classList.add('hidden');
+  if (storyOverlay) storyOverlay.classList.remove('hidden');
+  if (audioState.musicEnabled) {
+    menuMusic.volume = MENU_MUSIC_STORY_VOLUME;
+    playMenuMusic();
+  }
+  setStorySlide(0);
+}
+
+function closeStory() {
+  storyActive = false;
+  stopStoryAudio();
+  if (storyOverlay) storyOverlay.classList.add('hidden');
+  if (startMenu) startMenu.classList.remove('hidden');
+  if (audioState.musicEnabled) {
+    menuMusic.volume = MENU_MUSIC_BASE_VOLUME;
+    playMenuMusic();
+  }
+}
+
+function nextStory() {
+  if (!storyActive) return;
+  if (storyIndex >= STORY_SLIDES.length - 1) {
+    closeStory();
+    return;
+  }
+  setStorySlide(storyIndex + 1);
+}
+
 function startGame() {
   if (!state.menuActive) return;
+  if (storyActive) return;
   state.menuActive = false;
   state.characterSelectActive = false;
   if (startMenu) startMenu.classList.add('hidden');
@@ -99,6 +178,8 @@ if (skillsUI) skillsUI.classList.toggle('hidden', state.menuActive);
 syncMenuAudioButtons();
 
 if (startBtn) startBtn.addEventListener('click', openCharacterSelect);
+if (storyBtn) storyBtn.addEventListener('click', () => { unlockAudio(); openStory(); });
+if (storyNextBtn) storyNextBtn.addEventListener('click', () => { unlockAudio(); nextStory(); });
 characterCards.forEach(card => {
   card.addEventListener('click', () => {
     const characterId = Number(card.dataset.character);
@@ -115,6 +196,14 @@ if (menuMusicToggle) {
   menuMusicToggle.addEventListener('click', () => {
     setMusicEnabled(!audioState.musicEnabled);
     syncMenuAudioButtons();
+    if (!audioState.musicEnabled) {
+      stopStoryAudio();
+    } else if (storyActive) {
+      menuMusic.volume = MENU_MUSIC_STORY_VOLUME;
+      playStoryAudio(storyIndex);
+    } else {
+      menuMusic.volume = MENU_MUSIC_BASE_VOLUME;
+    }
   });
 }
 
@@ -762,6 +851,13 @@ function gameLoop(){
 document.addEventListener('keydown', e=>{
 
   if (state.menuActive) {
+    if (storyActive) {
+      if (!e.repeat && (e.key === 'Enter' || e.key === ' ')) {
+        nextStory();
+      }
+      unlockAudio();
+      return;
+    }
 
     if (!state.characterSelectActive && !e.repeat && (e.key === 'Enter' || e.key === ' ')) {
       openCharacterSelect();

@@ -16,9 +16,9 @@ class Player {
   constructor(config = {}) {
     // Начальная позиция игрока на экране
     this.x = canvas.width/2;
-    this.y = canvas.height - groundHeight - 20;
     // Размер круга, которым рисуется игрок
-    this.radius = 20;
+    this.radius = 25;
+    this.y = canvas.height - groundHeight - this.radius;
     this.vx = 0; this.vy = 0;
     this.onGround = false;
     this.characterId = config.id ?? 1;
