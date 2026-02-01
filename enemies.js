@@ -20,7 +20,7 @@ class Enemy {
     this.hp = (type==='large') ? largeEnemyHP : normalEnemyHP;
     this.width = (type==='large') ? 50 * enemySizeScale : 30 * enemySizeScale;
     this.height= (type==='large') ? 50 * enemySizeScale : 30 * enemySizeScale;
-    this.speed = dir * (type==='fast'?enemySpeed*2:type==='large'?enemySpeed*0.5:enemySpeed);
+    this.speed = dir * (type==='fast'?enemySpeed*2:type==='large'?enemySpeed*0.9:enemySpeed);
     this.alive = true;
     this.color = (type==='fast')?'#ffff00':(type==='large')?'#9933ff':'#ff4444';
   }
