@@ -1,4 +1,4 @@
-    body { margin: 0; overflow: hidden; background: linear-gradient(to bottom, #1e1e30, #2e2e50); position: relative; }
+﻿    body { margin: 0; overflow: hidden; background: linear-gradient(to bottom, #1e1e30, #2e2e50); position: relative; }
     canvas { display: block; }
     #gameOverScreen {
       position: absolute; top: 0; left: 0;
@@ -40,7 +40,63 @@
       border: none; border-radius: 6px;
       background: #3ef5ff; color: #00111f;
     }
-    /* === Уровень и прокачки === */
+    #startMenu {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 25;
+    }
+    #startMenu.hidden { visibility: hidden; pointer-events: none; }
+    #menuButtons {
+      position: absolute; top: 24px; left: 24px;
+      display: flex; gap: 14px;
+    }
+    .icon-btn {
+      width: 54px; height: 54px;
+      border-radius: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      background: rgba(8,12,32,0.6);
+      color: #ffffff;
+      font-size: 30px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+      position: relative;
+    }
+    .icon-btn.off { opacity: 0.45; }
+    .icon-btn.off::after {
+      content: '';
+      position: absolute;
+      width: 52px; height: 4px;
+      background: #ff3b3b;
+      border-radius: 2px;
+      transform: rotate(-35deg);
+    }
+    #startBtn {
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: 56px;
+      letter-spacing: 2px;
+      padding: 18px 80px;
+      border-radius: 28px;
+      border: 3px solid #b4ffb4;
+      background: linear-gradient(180deg, #66ff66 0%, #00cc3a 100%);
+      color: #0b2a12;
+      cursor: pointer;
+      box-shadow: 0 0 24px rgba(77,255,122,0.7), 0 16px 40px rgba(0,0,0,0.5);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    #startBtn:hover {
+      transform: translateY(-1px) scale(1.02);
+      box-shadow: 0 0 30px rgba(77,255,122,0.9), 0 20px 46px rgba(0,0,0,0.55);
+    }
+    #startBtn:active { transform: translateY(1px) scale(0.99); }
+    .hidden { display: none !important; }
+    @media (max-width: 600px) {
+      #startBtn { font-size: 40px; padding: 14px 50px; }
+      .icon-btn { width: 46px; height: 46px; font-size: 26px; }
+      #menuButtons { top: 16px; left: 16px; gap: 10px; }
+    }
+    /* === РЈСЂРѕРІРµРЅСЊ Рё РїСЂРѕРєР°С‡РєРё === */
     #upgradeMenu {
       position: absolute; top: 0; left: 0;
       width: 100vw; height: 100vh;
@@ -61,3 +117,5 @@
     }
     .upgrade-card:hover { transform: scale(1.08) rotate(-2deg); box-shadow: 0 8px 44px #1fd0b9ee; border-color: #3ef5ff; }
     .upgrade-icon { font-size: 48px; margin-bottom: 18px; }
+
+

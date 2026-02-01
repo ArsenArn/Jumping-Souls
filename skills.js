@@ -1,4 +1,4 @@
-import { state, gameVars, playerBaseHP, soundLevelUp } from './globals.js';
+﻿import { state, gameVars, playerBaseHP, soundLevelUp, getLevelExpRequirement, playSound } from './globals.js';
 
 const MAX_SKILL_LEVEL = 5;
 
@@ -166,7 +166,7 @@ function getRandomUpgrades(pool, count) {
 }
 
 function openUpgradeMenu(player) {
-  soundLevelUp.play();
+  playSound(soundLevelUp);
   const availableUpgrades = SKILLS.filter(skill => (skillLevels[skill.id] || 0) < MAX_SKILL_LEVEL);
   if (availableUpgrades.length === 0) {
     state.upgradeMenuActive = true;
@@ -198,10 +198,15 @@ function openUpgradeMenu(player) {
       }
       upgradeMenu.classList.remove('visible');
       state.upgradeMenuActive = false;
-      gameVars.nextLevelScore += 20;
+      gameVars.nextLevelExp += getLevelExpRequirement(gameVars.level);
     };
     upgradeCardsElem.appendChild(card);
   });
 }
 
 export { SKILLS, skillLevels, renderSkillsUI, openUpgradeMenu, getRandomUpgrades };
+
+
+
+
+

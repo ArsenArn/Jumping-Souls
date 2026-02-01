@@ -1,4 +1,4 @@
-import { state, gameVars,
+﻿import { state, gameVars, getLevelExpRequirement, awardEnemyKillRewards,
 
   keys, particles, enemies,
 
@@ -12,7 +12,9 @@ import { state, gameVars,
 
   minFlyingSpawn, maxFlyingSpawn, soundJump, 
 
-  soundHit, soundDeath, soundEnemyDie, soundHeal, soundLevelUp, bgMusic,
+  soundHit, soundDeath, soundEnemyDie, soundHeal, soundLevelUp, bgMusic, menuMusic,
+
+  audioState, playSound, playMenuMusic, playGameMusic, stopAllMusic, setSoundEnabled, setMusicEnabled,
 
 } from './globals.js';
 
@@ -26,17 +28,64 @@ import { drawVisualTopLeft } from './visuals.js';
 
 import { ENEMY_WAVES } from './waves.js';
 
+const startMenu = document.getElementById("startMenu");
+const startBtn = document.getElementById("startBtn");
+const menuSoundToggle = document.getElementById("menuSoundToggle");
+const menuMusicToggle = document.getElementById("menuMusicToggle");
+const skillsUI = document.getElementById("skillsUI");
 
-
+let audioUnlocked = false;
 function unlockAudio() {
-
-  bgMusic.play().catch(e => console.warn('bgMusic play blocked:', e));
-
-  document.removeEventListener('keydown', unlockAudio);
-
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  if (state.menuActive) {
+    playMenuMusic();
+  } else {
+    playGameMusic();
+  }
 }
 
 document.addEventListener('keydown', unlockAudio, { once: true });
+document.addEventListener('pointerdown', unlockAudio, { once: true });
+
+function setToggleVisual(button, enabled) {
+  button.classList.toggle('off', !enabled);
+  button.setAttribute('aria-pressed', String(enabled));
+}
+
+function syncMenuAudioButtons() {
+  if (!menuSoundToggle || !menuMusicToggle) return;
+  setToggleVisual(menuSoundToggle, audioState.soundEnabled);
+  setToggleVisual(menuMusicToggle, audioState.musicEnabled);
+}
+
+function startGame() {
+  if (!state.menuActive) return;
+  state.menuActive = false;
+  if (startMenu) startMenu.classList.add('hidden');
+  if (skillsUI) skillsUI.classList.remove('hidden');
+  stopAllMusic();
+  playGameMusic();
+  Object.keys(keys).forEach(key => delete keys[key]);
+}
+
+if (startMenu) startMenu.classList.toggle('hidden', !state.menuActive);
+if (skillsUI) skillsUI.classList.toggle('hidden', state.menuActive);
+syncMenuAudioButtons();
+
+if (startBtn) startBtn.addEventListener('click', startGame);
+if (menuSoundToggle) {
+  menuSoundToggle.addEventListener('click', () => {
+    setSoundEnabled(!audioState.soundEnabled);
+    syncMenuAudioButtons();
+  });
+}
+if (menuMusicToggle) {
+  menuMusicToggle.addEventListener('click', () => {
+    setMusicEnabled(!audioState.musicEnabled);
+    syncMenuAudioButtons();
+  });
+}
 
 
 
@@ -243,9 +292,8 @@ let gameOverShown = false;
 
 function showGameOver() {
 
-  bgMusic.pause();
-
-  soundDeath.play();
+  stopAllMusic();
+  playSound(soundDeath);
 
   state.paused = false;
 
@@ -353,12 +401,14 @@ function drawBackground() {
 
 
 function drawUI() {
+  if (state.menuActive) return;
 
   ctx.fillStyle='white';
 
   ctx.font='bold 32px Arial';
 
   ctx.fillText('Score:'+gameVars.score,20,40);
+  ctx.fillText('Exp:'+gameVars.exp,20,80);
 
   // Время (таймер)
 
@@ -382,7 +432,7 @@ ctx.textAlign = 'left';
 
 
 
-  ctx.fillText('Level:'+(gameVars.level+1),20,80);
+  ctx.fillText('Level:'+(gameVars.level+1),20,120);
 
   // HP
 
@@ -394,13 +444,13 @@ for(let i = 0; i < player.maxHP; i++) {
 
   ctx.fillStyle = 'white'; // Можно не менять
 
-  // 🟥 Красное, если HP есть
+  // Красное, если HP есть
 
-  // 🟦 Синее, если HP нет (можно заменить на 🩵 — голубое сердце)
+  // Синее, если HP нет (можно заменить на 🩵 — голубое сердце)
 
   let emoji = (i < player.hp) ? '❤️' : '💙'; // или '🩵'
 
-  ctx.fillText(emoji, 20 + i * 34, 130);
+  ctx.fillText(emoji, 20 + i * 34, 160);
 
 }
 
@@ -422,18 +472,30 @@ for(let i = 0; i < player.maxHP; i++) {
 
   }
 
-  // До следующей прокачки
+  // EXP bar
+  const expNeeded = getLevelExpRequirement(gameVars.level);
+  const expPrevLevel = gameVars.nextLevelExp - expNeeded;
+  const expProgress = Math.max(0, gameVars.exp - expPrevLevel);
+  const expRatio = expNeeded > 0 ? Math.min(1, expProgress / expNeeded) : 0;
+  const barX = 20;
+  const barY = 200;
+  const barW = 280;
+  const barH = 18;
 
   ctx.save();
-
-  ctx.globalAlpha=0.6;
-
-  ctx.font='20px Arial';
-
-  ctx.fillStyle='#3ef5ff';
-
-  ctx.fillText('Experience to level: '+Math.max(0,gameVars.nextLevelScore-gameVars.score),20,170);
-
+  ctx.fillStyle = '#0b0f1f';
+  ctx.strokeStyle = '#3ef5ff';
+  ctx.lineWidth = 3;
+  ctx.shadowColor = '#3ef5ff';
+  ctx.shadowBlur = 10;
+  ctx.fillRect(barX, barY, barW, barH);
+  ctx.strokeRect(barX, barY, barW, barH);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#33e8ff';
+  ctx.fillRect(barX, barY, Math.floor(barW * expRatio), barH);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 16px Arial';
+  ctx.fillText(`EXP ${expProgress}/${expNeeded}`, barX + 6, barY + 14);
   ctx.restore();
 
 }
@@ -447,7 +509,6 @@ let timeElapsed = 0; // в кадрах
 let player = new Player();
 
 setTimeout(renderSkillsUI, 0);
-
 
 
 
@@ -470,7 +531,7 @@ function gameLoop(){
 
 
 
-  if (!state.upgradeMenuActive && !state.gameOver && !state.paused) {
+  if (!state.menuActive && !state.upgradeMenuActive && !state.gameOver && !state.paused) {
     realElapsed += delta;
     gameElapsed += delta;
 
@@ -510,8 +571,8 @@ function gameLoop(){
           f.alive = false;
           player.vy = jumpPower / 2;
           spawnParticles(f);
-          soundEnemyDie.play();
-          gameVars.score++;
+          playSound(soundEnemyDie);
+          awardEnemyKillRewards();
         } else {
           if (player.invincible === 0) {
             if (player.hasShield && player.shieldActive) {
@@ -521,12 +582,12 @@ function gameLoop(){
               player.hp--;
               player.damageFlash = 20;
               player.invincible = 30;
-              soundHit.play();
+              playSound(soundHit);
             }
           }
           f.alive = false;
           spawnParticles(f);
-          soundEnemyDie.play();
+          playSound(soundEnemyDie);
           if (player.hp <= 0) {
             state.gameOver = true;
             showGameOver();
@@ -548,7 +609,7 @@ function gameLoop(){
 
           e.hp--; player.vy=jumpPower/1.5;
 
-          if(e.hp<=0){e.alive=false; spawnParticles(e); soundEnemyDie.play(); gameVars.combo++; gameVars.score+=gameVars.combo; gameVars.comboTimer=180; gameVars.comboDisplay=180;
+          if(e.hp<=0){e.alive=false; spawnParticles(e); playSound(soundEnemyDie); awardEnemyKillRewards();
 
     } else if(e.type==='large') e.color='#cc66ff';
 
@@ -564,7 +625,7 @@ function gameLoop(){
 
             } else {
 
-              player.hp--; player.damageFlash=20; player.invincible=30; soundHit.play();
+              player.hp--; player.damageFlash=20; player.invincible=30; playSound(soundHit);
 
             }
 
@@ -626,7 +687,7 @@ function gameLoop(){
 
     // ПРОКАЧКА — условия для меню
 
-    if(gameVars.score >= gameVars.nextLevelScore) {
+    if(gameVars.exp >= gameVars.nextLevelExp) {
 
       gameVars.level++;
 
@@ -668,6 +729,20 @@ function gameLoop(){
 
 document.addEventListener('keydown', e=>{
 
+  if (state.menuActive) {
+
+    if (!e.repeat && (e.key === 'Enter' || e.key === ' ')) {
+
+      startGame();
+
+    }
+
+    unlockAudio();
+
+    return;
+
+  }
+
   if (e.key === 'Escape' && !e.repeat) {
 
     if (!state.gameOver && !state.upgradeMenuActive) {
@@ -686,7 +761,13 @@ document.addEventListener('keydown', e=>{
 
 });
 
-document.addEventListener('keyup', e=>keys[e.key]=false);
+document.addEventListener('keyup', e=>{
+
+  if (state.menuActive) return;
+
+  keys[e.key]=false;
+
+});
 
 
 
@@ -701,4 +782,9 @@ gameLoop();
 
 
 export { showGameOver };
+
+
+
+
+
 

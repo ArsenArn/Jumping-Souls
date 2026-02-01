@@ -1,4 +1,4 @@
-import { state, gameVars,
+﻿import { state, gameVars, awardEnemyKillRewards,
   keys, particles, enemies,
   flyingEnemies, projectiles, hearts, rockets, canvas, ctx,
   gravity, jumpPower, moveSpeed, enemySpeed,
@@ -6,6 +6,7 @@ import { state, gameVars,
   largeEnemyHP, normalEnemyHP, groundSpawnInterval,
   minFlyingSpawn, maxFlyingSpawn, soundJump, 
   soundHit, soundDeath, soundEnemyDie, soundHeal, soundLevelUp, bgMusic,
+  playSound,
 } from './globals.js';
 import { Rocket, spawnParticles } from './enemies.js';
 import { drawVisualCentered } from './visuals.js';
@@ -44,7 +45,7 @@ class Player {
 
   }
   update(delta) {
-    if (state.upgradeMenuActive || state.gameOver) return;
+    if (state.menuActive || state.upgradeMenuActive || state.gameOver) return;
     
     // Вычисляем множители
 let speedMul = 1 + 0.05 * (this.speedBoost || 0);
@@ -61,7 +62,7 @@ if (keys.ArrowLeft || keys.a || keys.A || keys['ф'] || keys['Ф'] ) {
 if ((keys.ArrowUp || keys.w || keys.W || keys['ц'] || keys['Ц'] || keys[' '] ) && this.onGround) {
   this.vy = jumpPower * jumpMul;
   this.onGround = false;
-  soundJump.play();
+  playSound(soundJump);
 }
 
     this.vy += gravity;
@@ -232,11 +233,8 @@ class PlayerProjectile {
     if (hitEnemy.hp <= 0) {
       hitEnemy.alive = false;
       spawnParticles(hitEnemy);
-      soundEnemyDie.play();
-      gameVars.combo++;
-      gameVars.score += gameVars.combo;
-      gameVars.comboTimer = 180;
-      gameVars.comboDisplay = 180;
+      playSound(soundEnemyDie);
+      awardEnemyKillRewards();
     }
     this.alive = false;
   }
@@ -256,3 +254,8 @@ class PlayerProjectile {
 }
 
 export { Player, PlayerProjectile };
+
+
+
+
+

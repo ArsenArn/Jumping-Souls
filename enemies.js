@@ -1,4 +1,4 @@
-import { state, gameVars,
+﻿import { state, gameVars, awardEnemyKillRewards,
   keys, particles, enemies,
   flyingEnemies, projectiles, hearts, rockets, canvas, ctx,
   gravity, jumpPower, moveSpeed, enemySpeed,
@@ -6,6 +6,7 @@ import { state, gameVars,
   largeEnemyHP, normalEnemyHP, groundSpawnInterval,
   minFlyingSpawn, maxFlyingSpawn, soundJump, 
   soundHit, soundDeath, soundEnemyDie, soundHeal, soundLevelUp, bgMusic,
+  playSound,
 } from './globals.js';
 import { drawVisualCentered, drawVisualTopLeft } from './visuals.js';
 
@@ -198,7 +199,7 @@ class Projectile {
       this.player.hp--;
       this.player.damageFlash = 20;
       this.player.invincible = 30;
-      soundHit.play();
+      playSound(soundHit);
       if(this.player.hp <= 0) {
         state.gameOver = true;
       }
@@ -278,7 +279,7 @@ class Heart {
     this.pulse+=0.1;
     const dx=this.player.x-this.x, dy=this.player.y-this.y;
     if(Math.hypot(dx,dy)<this.player.radius+this.radius) {
-      this.collected=true; soundHeal.play();
+      this.collected=true; playSound(soundHeal);
       let healAmount = 1 + (this.player.healBoost||0);
       if(this.player.hp < this.player.maxHP) this.player.hp = Math.min(this.player.maxHP, this.player.hp + healAmount);
     }
@@ -343,11 +344,8 @@ ctx.restore();
           if (e.hp <= 0) {
             e.alive = false;
             spawnParticles(e);
-            soundEnemyDie.play();
-            gameVars.combo++;
-            gameVars.score += gameVars.combo;
-            gameVars.comboTimer = 180;
-            gameVars.comboDisplay = 180;
+            playSound(soundEnemyDie);
+            awardEnemyKillRewards();
           }
         }
       }
@@ -378,3 +376,9 @@ function spawnParticles(e) {
 }
 
 export { Enemy, BlueEnemy, FlyingEnemy, Projectile, Heart, Rocket, Particle, RocketParticle, spawnParticles };
+
+
+
+
+
+
