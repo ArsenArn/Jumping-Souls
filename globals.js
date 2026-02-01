@@ -36,6 +36,14 @@ function awardEnemyKillRewards() {
   gameVars.exp += gameVars.expPerEnemy;
 }
 
+function resetCombo() {
+  if (gameVars.combo > 0) {
+    gameVars.combo = 0;
+    gameVars.comboTimer = 0;
+    gameVars.comboDisplay = 0;
+  }
+}
+
 gameVars.nextLevelExp = getLevelExpRequirement(0);
 
 
@@ -90,6 +98,8 @@ let state = {
   upgradeMenuActive: false,
   paused: false,
   menuActive: true,
+  characterSelectActive: false,
+  selectedCharacter: 1,
   // сюда можно добавить еще любые флаги!
 };
 
@@ -137,7 +147,7 @@ function setMusicEnabled(enabled) {
 }
 
 
-export { state, gameVars, getLevelExpRequirement, awardEnemyKillRewards,
+export { state, gameVars, getLevelExpRequirement, awardEnemyKillRewards, resetCombo,
   keys, particles, enemies,
   flyingEnemies, projectiles, hearts, rockets, canvas, ctx,
   gravity, jumpPower, moveSpeed, enemySpeed,

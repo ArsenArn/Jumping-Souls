@@ -13,7 +13,7 @@ import { drawVisualCentered } from './visuals.js';
 
 
 class Player {
-  constructor() {
+  constructor(config = {}) {
     // Начальная позиция игрока на экране
     this.x = canvas.width/2;
     this.y = canvas.height - groundHeight - 20;
@@ -21,9 +21,14 @@ class Player {
     this.radius = 20;
     this.vx = 0; this.vy = 0;
     this.onGround = false;
+    this.characterId = config.id ?? 1;
+    this.baseSpeedMul = config.speedMul ?? 1;
+    this.baseJumpMul = config.jumpMul ?? 1;
+    this.visualKey = config.visualKey ?? 'player';
     // Стартовое здоровье игрока
-    this.hp = playerBaseHP;
-    this.maxHP = playerBaseHP;
+    const baseHP = config.baseHP ?? playerBaseHP;
+    this.hp = baseHP;
+    this.maxHP = baseHP;
     this.damageFlash = 0;
     this.invincible = 0;
     // Уровень автострельбы (0 отключает навык)
@@ -48,8 +53,8 @@ class Player {
     if (state.menuActive || state.upgradeMenuActive || state.gameOver) return;
     
     // Вычисляем множители
-let speedMul = 1 + 0.05 * (this.speedBoost || 0);
-let jumpMul = 1 + 0.05 * (this.jumpBoost || 0);
+let speedMul = (1 + 0.05 * (this.speedBoost || 0)) * this.baseSpeedMul;
+let jumpMul = (1 + 0.05 * (this.jumpBoost || 0)) * this.baseJumpMul;
 
 if (keys.ArrowLeft || keys.a || keys.A || keys['ф'] || keys['Ф'] ) {
   this.vx = -moveSpeed * speedMul;
@@ -77,13 +82,6 @@ if (this.x + this.radius > canvas.width) this.x = canvas.width - this.radius;
   this.y = canvas.height - groundHeight - this.radius;
   this.vy = 0;
   this.onGround = true;
-
-  // Сбросить комбо, если оно было
-  if (gameVars.combo > 0) {
-    gameVars.combo = 0;
-    gameVars.comboTimer = 0;
-    gameVars.comboDisplay = 0;
-  }
 }
     if (this.damageFlash > 0) this.damageFlash--;
     if (this.invincible > 0) this.invincible--;
@@ -160,7 +158,7 @@ if (this.rocketLevel > 0 && !state.gameOver && !state.upgradeMenuActive) {
   }
   getAutoFireCooldown() {
     // Задержка между сериями автострельбы в секундах
-    return 3.0; // 3 секунды
+    return 6.0; // 6 секунд
   }
 getShieldCooldown() {
   let shieldLevel = this.shieldLevel || 1;
@@ -174,7 +172,7 @@ getShieldCooldown() {
     const shadowColor = this.damageFlash>0 ? '#ff0000' : '#00ff00';
     const playerDrawn = drawVisualCentered(
       ctx,
-      'player',
+      this.visualKey,
       this.x,
       this.y,
       this.radius * 2,
@@ -254,6 +252,8 @@ class PlayerProjectile {
 }
 
 export { Player, PlayerProjectile };
+
+
 
 
 

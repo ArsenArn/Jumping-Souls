@@ -13,7 +13,24 @@
       <button id="menuSoundToggle" class="icon-btn" aria-pressed="true" title="Sound">🔊</button>
       <button id="menuMusicToggle" class="icon-btn" aria-pressed="true" title="Music">🎵</button>
     </div>
+    <div id="menuTutorial">
+      <div class="tutorial-title">How to Play</div>
+      <div class="tutorial-line">⬅️ / ➡️ or A / D — Move</div>
+      <div class="tutorial-line">⬆️ or W or Space — Jump</div>
+      <div class="tutorial-line">🧠 Attack enemies only from above, or you take damage.</div>
+    </div>
     <button id="startBtn">START</button>
+  </div>
+  <div id="characterSelect" class="hidden">
+    <div class="character-title">Choose a character</div>
+    <div class="character-cards">
+      <button class="character-card" data-character="1" aria-label="Character 1">
+        <img src="visuals/Mask/Player_Mask_1.jpg" alt="Player 1">
+      </button>
+      <button class="character-card" data-character="2" aria-label="Character 2">
+        <img src="visuals/Mask/Player_Mask_2.jpg" alt="Player 2">
+      </button>
+    </div>
   </div>
   <div id="skillsUI" style="
   position: absolute;
@@ -36,7 +53,7 @@
     <button id="continueBtn">Continue</button>
   </div>
   <div id="upgradeMenu">
-    <div id="upgradeTitle">Выбери прокачку!</div>
+    <div id="upgradeTitle">Choose an upgrade!</div>
     <div class="upgrade-cards" id="upgradeCards"></div>
   </div>
 <script type="module" src="globals.js"></script>

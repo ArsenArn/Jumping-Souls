@@ -1,4 +1,10 @@
 const visualCache = new Map();
+const visualSources = {
+  player_1: 'visuals/player/Player_1.jpg',
+  player_2: 'visuals/player/Player_2.jpg',
+  player_mask_1: 'visuals/Mask/Player_Mask_1.jpg',
+  player_mask_2: 'visuals/Mask/Player_Mask_2.jpg',
+};
 
 function getVisualRecord(key) {
   if (visualCache.has(key)) {
@@ -12,7 +18,7 @@ function getVisualRecord(key) {
   img.onerror = () => {
     record.status = 'error';
   };
-  img.src = `visuals/${key}/${key}.jpg`;
+  img.src = visualSources[key] ?? `visuals/${key}/${key}.jpg`;
   visualCache.set(key, record);
   return record;
 }

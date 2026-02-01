@@ -1,4 +1,4 @@
-﻿import { state, gameVars, getLevelExpRequirement, awardEnemyKillRewards,
+﻿import { state, gameVars, getLevelExpRequirement, awardEnemyKillRewards, resetCombo,
 
   keys, particles, enemies,
 
@@ -33,6 +33,8 @@ const startBtn = document.getElementById("startBtn");
 const menuSoundToggle = document.getElementById("menuSoundToggle");
 const menuMusicToggle = document.getElementById("menuMusicToggle");
 const skillsUI = document.getElementById("skillsUI");
+const characterSelect = document.getElementById("characterSelect");
+const characterCards = document.querySelectorAll(".character-card");
 
 let audioUnlocked = false;
 function unlockAudio() {
@@ -59,10 +61,32 @@ function syncMenuAudioButtons() {
   setToggleVisual(menuMusicToggle, audioState.musicEnabled);
 }
 
+const CHARACTER_PRESETS = {
+  1: { id: 1, baseHP: playerBaseHP, speedMul: 1, jumpMul: 1, visualKey: 'player_1' },
+  2: { id: 2, baseHP: 7, speedMul: 0.9, jumpMul: 0.9, visualKey: 'player_2' },
+};
+
+function openCharacterSelect() {
+  if (!state.menuActive) return;
+  state.characterSelectActive = true;
+  if (startMenu) startMenu.classList.add('hidden');
+  if (characterSelect) characterSelect.classList.remove('hidden');
+}
+
+function chooseCharacter(characterId) {
+  const preset = CHARACTER_PRESETS[characterId];
+  if (!preset) return;
+  state.selectedCharacter = characterId;
+  player = new Player(preset);
+  startGame();
+}
+
 function startGame() {
   if (!state.menuActive) return;
   state.menuActive = false;
+  state.characterSelectActive = false;
   if (startMenu) startMenu.classList.add('hidden');
+  if (characterSelect) characterSelect.classList.add('hidden');
   if (skillsUI) skillsUI.classList.remove('hidden');
   stopAllMusic();
   playGameMusic();
@@ -70,10 +94,17 @@ function startGame() {
 }
 
 if (startMenu) startMenu.classList.toggle('hidden', !state.menuActive);
+if (characterSelect) characterSelect.classList.toggle('hidden', !state.characterSelectActive);
 if (skillsUI) skillsUI.classList.toggle('hidden', state.menuActive);
 syncMenuAudioButtons();
 
-if (startBtn) startBtn.addEventListener('click', startGame);
+if (startBtn) startBtn.addEventListener('click', openCharacterSelect);
+characterCards.forEach(card => {
+  card.addEventListener('click', () => {
+    const characterId = Number(card.dataset.character);
+    chooseCharacter(characterId);
+  });
+});
 if (menuSoundToggle) {
   menuSoundToggle.addEventListener('click', () => {
     setSoundEnabled(!audioState.soundEnabled);
@@ -446,9 +477,9 @@ for(let i = 0; i < player.maxHP; i++) {
 
   // Красное, если HP есть
 
-  // Синее, если HP нет (можно заменить на 🩵 — голубое сердце)
+  // Blue when HP is empty (can replace with light-blue heart)
 
-  let emoji = (i < player.hp) ? '❤️' : '💙'; // или '🩵'
+  let emoji = (i < player.hp) ? '\u2764\uFE0F' : '\uD83D\uDC99'; // or '\uD83E\uDE75'
 
   ctx.fillText(emoji, 20 + i * 34, 160);
 
@@ -506,7 +537,7 @@ for(let i = 0; i < player.maxHP; i++) {
 
 let timeElapsed = 0; // в кадрах
 
-let player = new Player();
+let player = new Player(CHARACTER_PRESETS[state.selectedCharacter] ?? CHARACTER_PRESETS[1]);
 
 setTimeout(renderSkillsUI, 0);
 
@@ -580,6 +611,7 @@ function gameLoop(){
               player.shieldCooldown = 300;
             } else {
               player.hp--;
+              resetCombo();
               player.damageFlash = 20;
               player.invincible = 30;
               playSound(soundHit);
@@ -625,7 +657,7 @@ function gameLoop(){
 
             } else {
 
-              player.hp--; player.damageFlash=20; player.invincible=30; playSound(soundHit);
+              player.hp--; resetCombo(); player.damageFlash=20; player.invincible=30; playSound(soundHit);
 
             }
 
@@ -731,10 +763,8 @@ document.addEventListener('keydown', e=>{
 
   if (state.menuActive) {
 
-    if (!e.repeat && (e.key === 'Enter' || e.key === ' ')) {
-
-      startGame();
-
+    if (!state.characterSelectActive && !e.repeat && (e.key === 'Enter' || e.key === ' ')) {
+      openCharacterSelect();
     }
 
     unlockAudio();
@@ -782,6 +812,14 @@ gameLoop();
 
 
 export { showGameOver };
+
+
+
+
+
+
+
+
 
 
 

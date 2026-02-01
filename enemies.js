@@ -1,4 +1,4 @@
-﻿import { state, gameVars, awardEnemyKillRewards,
+﻿import { state, gameVars, awardEnemyKillRewards, resetCombo,
   keys, particles, enemies,
   flyingEnemies, projectiles, hearts, rockets, canvas, ctx,
   gravity, jumpPower, moveSpeed, enemySpeed,
@@ -197,6 +197,7 @@ class Projectile {
       this.player.shieldCooldown = this.player.getShieldCooldown();
     } else {
       this.player.hp--;
+      resetCombo();
       this.player.damageFlash = 20;
       this.player.invincible = 30;
       playSound(soundHit);
@@ -274,8 +275,17 @@ class Heart {
     this.y=canvas.height-groundHeight-20;
     this.radius=15; this.collected=false; this.pulse=0;
     this.player = player;
+    this.age = 0;
+    this.lifetime = 300; // ~5 seconds at 60 fps
+    this.blinkDuration = 60; // last ~1 second
   }
   update() {
+    if (this.collected) return;
+    this.age++;
+    if (this.age >= this.lifetime) {
+      this.collected = true;
+      return;
+    }
     this.pulse+=0.1;
     const dx=this.player.x-this.x, dy=this.player.y-this.y;
     if(Math.hypot(dx,dy)<this.player.radius+this.radius) {
@@ -291,8 +301,13 @@ class Heart {
 ctx.font = `${this.radius * 2}px Arial`;
 ctx.textAlign = 'center';
 ctx.textBaseline = 'middle';
-ctx.globalAlpha = 1;
-ctx.fillText('❤️', this.x, this.y);
+const timeLeft = this.lifetime - this.age;
+if (timeLeft <= this.blinkDuration) {
+  ctx.globalAlpha = (Math.floor(this.age / 5) % 2 === 0) ? 0.2 : 1;
+} else {
+  ctx.globalAlpha = 1;
+}
+ctx.fillText('\u2764\uFE0F', this.x, this.y);
 ctx.restore();
   }
 }
@@ -363,7 +378,7 @@ ctx.restore();
     ctx.font = '42px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('🚀', 0, 0);
+    ctx.fillText('\uD83D\uDE80', 0, 0);
     ctx.restore();
   }
   // После взрыва не рисуем ничего!
@@ -376,6 +391,10 @@ function spawnParticles(e) {
 }
 
 export { Enemy, BlueEnemy, FlyingEnemy, Projectile, Heart, Rocket, Particle, RocketParticle, spawnParticles };
+
+
+
+
 
 
 

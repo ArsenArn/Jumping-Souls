@@ -9,14 +9,14 @@ function levelsFrom(descs) {
 const SKILLS = [
   {
     id: 'maxhp',
-    name: '+1 к максимальному HP',
+    name: '+1 Max HP',
     icon: '❤️',
     levels: levelsFrom([
-      '+1 к максимальному HP (итого +1).',
-      '+1 к максимальному HP (итого +2).',
-      '+1 к максимальному HP (итого +3).',
-      '+1 к максимальному HP (итого +4).',
-      '+1 к максимальному HP (итого +5).',
+      '+1 Max HP (total +1).',
+      '+1 Max HP (total +2).',
+      '+1 Max HP (total +3).',
+      '+1 Max HP (total +4).',
+      '+1 Max HP (total +5).',
     ]),
     apply(player, level) {
       player.maxHP = playerBaseHP + level;
@@ -25,14 +25,14 @@ const SKILLS = [
   },
   {
     id: 'rocket',
-    name: 'Ракета',
+    name: 'Rocket',
     icon: '🚀',
     levels: levelsFrom([
-      '1 ракета в залпе каждые 10 сек.',
-      '2 ракеты в залпе каждые 10 сек.',
-      '3 ракеты в залпе каждые 10 сек.',
-      '4 ракеты в залпе каждые 10 сек.',
-      '5 ракет в залпе каждые 10 сек.',
+      '1 rocket per volley every 10 sec.',
+      '2 rockets per volley every 10 sec.',
+      '3 rockets per volley every 10 sec.',
+      '4 rockets per volley every 10 sec.',
+      '5 rockets per volley every 10 sec.',
     ]),
     apply(player, level) {
       player.rocketLevel = level;
@@ -41,14 +41,14 @@ const SKILLS = [
   },
   {
     id: 'autofire',
-    name: 'Автострельба',
+    name: 'Auto Fire',
     icon: '🔫',
     levels: levelsFrom([
-      '1 снаряд в авто-очереди каждые 3 сек.',
-      '2 снаряда в авто-очереди каждые 3 сек.',
-      '3 снаряда в авто-очереди каждые 3 сек.',
-      '4 снаряда в авто-очереди каждые 3 сек.',
-      '5 снарядов в авто-очереди каждые 3 сек.',
+      '1 shot in the auto-burst every 6 sec.',
+      '2 shots in the auto-burst every 6 sec.',
+      '3 shots in the auto-burst every 6 sec.',
+      '4 shots in the auto-burst every 6 sec.',
+      '5 shots in the auto-burst every 6 sec.',
     ]),
     apply(player, level) {
       player.autoFire = level;
@@ -57,14 +57,14 @@ const SKILLS = [
   },
   {
     id: 'healup',
-    name: 'Усиление лечения',
+    name: 'Healing Boost',
     icon: '💊',
     levels: levelsFrom([
-      '+1 HP от аптечек (итого +1).',
-      '+1 HP от аптечек (итого +2).',
-      '+1 HP от аптечек (итого +3).',
-      '+1 HP от аптечек (итого +4).',
-      '+1 HP от аптечек (итого +5).',
+      '+1 HP from medkits (total +1).',
+      '+1 HP from medkits (total +2).',
+      '+1 HP from medkits (total +3).',
+      '+1 HP from medkits (total +4).',
+      '+1 HP from medkits (total +5).',
     ]),
     apply(player, level) {
       player.healBoost = level;
@@ -72,14 +72,14 @@ const SKILLS = [
   },
   {
     id: 'speed',
-    name: 'Скорость передвижения',
+    name: 'Move Speed',
     icon: '💨',
     levels: levelsFrom([
-      '+5% к скорости (итого +5%).',
-      '+5% к скорости (итого +10%).',
-      '+5% к скорости (итого +15%).',
-      '+5% к скорости (итого +20%).',
-      '+5% к скорости (итого +25%).',
+      '+5% speed (total +5%).',
+      '+5% speed (total +10%).',
+      '+5% speed (total +15%).',
+      '+5% speed (total +20%).',
+      '+5% speed (total +25%).',
     ]),
     apply(player, level) {
       player.speedBoost = level;
@@ -87,14 +87,14 @@ const SKILLS = [
   },
   {
     id: 'jump',
-    name: 'Сила прыжка',
+    name: 'Jump Power',
     icon: '🦘',
     levels: levelsFrom([
-      '+5% к высоте прыжка (итого +5%).',
-      '+5% к высоте прыжка (итого +10%).',
-      '+5% к высоте прыжка (итого +15%).',
-      '+5% к высоте прыжка (итого +20%).',
-      '+5% к высоте прыжка (итого +25%).',
+      '+5% jump height (total +5%).',
+      '+5% jump height (total +10%).',
+      '+5% jump height (total +15%).',
+      '+5% jump height (total +20%).',
+      '+5% jump height (total +25%).',
     ]),
     apply(player, level) {
       player.jumpBoost = level;
@@ -102,14 +102,14 @@ const SKILLS = [
   },
   {
     id: 'shield',
-    name: 'Щит',
+    name: 'Shield',
     icon: '🛡️',
     levels: levelsFrom([
-      'Щит появляется каждые 9 сек (блок 1 урон).',
-      'Щит появляется каждые 8 сек (блок 1 урон).',
-      'Щит появляется каждые 7 сек (блок 1 урон).',
-      'Щит появляется каждые 6 сек (блок 1 урон).',
-      'Щит появляется каждые 5 сек (блок 1 урон).',
+      'Shield appears every 9 sec (blocks 1 damage).',
+      'Shield appears every 8 sec (blocks 1 damage).',
+      'Shield appears every 7 sec (blocks 1 damage).',
+      'Shield appears every 6 sec (blocks 1 damage).',
+      'Shield appears every 5 sec (blocks 1 damage).',
     ]),
     apply(player, level) {
       player.hasShield = true;
@@ -149,7 +149,7 @@ function renderSkillsUI() {
     el.innerHTML = `
       <div style="font-size: 38px; line-height: 1">${skill.icon}</div>
       <div style="margin-top: 2px; font-size: 20px; font-weight: bold; color: #3ef5ff;">
-        ${level >= MAX_SKILL_LEVEL ? 'Макс' : level}
+        ${level >= MAX_SKILL_LEVEL ? 'Max' : level}
       </div>
     `;
     ui.appendChild(el);
@@ -171,7 +171,7 @@ function openUpgradeMenu(player) {
   if (availableUpgrades.length === 0) {
     state.upgradeMenuActive = true;
     upgradeMenu.classList.add('visible');
-    upgradeCardsElem.innerHTML = '<div style="color:#fff; font-size:28px; margin:40px">Все навыки уже прокачаны до максимума!</div>';
+    upgradeCardsElem.innerHTML = '<div style="color:#fff; font-size:28px; margin:40px">All skills are already at max level!</div>';
     return;
   }
   state.upgradeMenuActive = true;
@@ -187,7 +187,7 @@ function openUpgradeMenu(player) {
     card.innerHTML = `
       <div class="upgrade-icon">${skill.icon}</div>
       <div style="font-weight:bold">${skill.name}</div>
-      <div style="margin-top:6px; font-size:16px; opacity:0.7;">Уровень ${nextLevel}/${MAX_SKILL_LEVEL}</div>
+      <div style="margin-top:6px; font-size:16px; opacity:0.7;">Level ${nextLevel}/${MAX_SKILL_LEVEL}</div>
       <div style="margin-top:10px; font-size:18px; opacity:0.7;">${levelDesc}</div>
     `;
     card.onclick = () => {
