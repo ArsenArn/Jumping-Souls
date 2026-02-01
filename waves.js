@@ -11,7 +11,7 @@ const ENEMY_WAVES = [
   // enemy_flying spawns from both sides; use even counts for perfect symmetry
   { time: 2, enemy: enemy, count: 6 },
   { time: 3, enemy: enemy_blue, count: 4 },
-  { time: 6, enemy: enemy, count: 8 },
+  { time: 6, enemy: enemy_flying, count: 4 },
   { time: 9, enemy: enemy, count: 10 },
   { time: 10, enemy: enemy_blue, count: 8 },
   { time: 12, enemy: enemy, count: 5 },
