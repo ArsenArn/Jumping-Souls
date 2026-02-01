@@ -36,6 +36,7 @@ class Player {
     this.autoFireTimer = 0;
     this.autoFireDelayTimer = 0;
     this.healBoost = 0;
+    this.healLifetimeBonus = 0;
     // Параметры щита
     this.hasShield = false;
     this.shieldCooldown = 0;
@@ -47,6 +48,7 @@ class Player {
     this.rocketBurst = 0;     // Сколько ракет осталось в очереди
     this.rocketTargets = [];  // Места падения очереди ракет
     this.rocketDelay = 0;     // Таймер между пусками
+    this.rocketCooldownBonus = 0;
 
   }
   update(delta) {
@@ -140,7 +142,7 @@ if (this.rocketLevel > 0 && !state.gameOver && !state.upgradeMenuActive) {
       let angle = (Math.random() - 0.5) * 0.4;
       this.rocketTargets.push({ x: targetX, angle: angle });
     }
-    this.rocketCooldown = 10; // 10 секунд между залпами (теперь секунды, не кадры!)
+    this.rocketCooldown = Math.max(1, 10 - (this.rocketCooldownBonus || 0)); // секунды между залпами
   }
   if (this.rocketBurst > 0 && this.rocketTargets.length > 0) {
     this.rocketDelay += delta;

@@ -29,13 +29,14 @@ const SKILLS = [
     icon: '🚀',
     levels: levelsFrom([
       '1 rocket per volley every 10 sec.',
-      '2 rockets per volley every 10 sec.',
-      '3 rockets per volley every 10 sec.',
-      '4 rockets per volley every 10 sec.',
-      '5 rockets per volley every 10 sec.',
+      '1 rocket per volley every 9 sec.',
+      '2 rockets per volley every 9 sec.',
+      '2 rockets per volley every 8 sec.',
+      '3 rockets per volley every 8 sec.',
     ]),
     apply(player, level) {
-      player.rocketLevel = level;
+      player.rocketLevel = Math.floor((level + 1) / 2);
+      player.rocketCooldownBonus = Math.floor(level / 2);
       if (level === 1) player.rocketCooldown = 0;
     }
   },
@@ -61,13 +62,14 @@ const SKILLS = [
     icon: '💊',
     levels: levelsFrom([
       '+1 HP from medkits (total +1).',
+      '+1 sec medkit lifetime (total +1 sec).',
       '+1 HP from medkits (total +2).',
+      '+1 sec medkit lifetime (total +2 sec).',
       '+1 HP from medkits (total +3).',
-      '+1 HP from medkits (total +4).',
-      '+1 HP from medkits (total +5).',
     ]),
     apply(player, level) {
-      player.healBoost = level;
+      player.healBoost = Math.floor((level + 1) / 2);
+      player.healLifetimeBonus = Math.floor(level / 2);
     }
   },
   {

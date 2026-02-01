@@ -33,6 +33,8 @@ const startBtn = document.getElementById("startBtn");
 const storyBtn = document.getElementById("storyBtn");
 const menuSoundToggle = document.getElementById("menuSoundToggle");
 const menuMusicToggle = document.getElementById("menuMusicToggle");
+const pauseSoundToggle = document.getElementById("pauseSoundToggle");
+const pauseMusicToggle = document.getElementById("pauseMusicToggle");
 const skillsUI = document.getElementById("skillsUI");
 const characterSelect = document.getElementById("characterSelect");
 const characterCards = document.querySelectorAll(".character-card");
@@ -40,6 +42,7 @@ const storyOverlay = document.getElementById("storyOverlay");
 const storyImage = document.getElementById("storyImage");
 const storyCaption = document.getElementById("storyCaption");
 const storyNextBtn = document.getElementById("storyNextBtn");
+const pauseMenuBtn = document.getElementById("pauseMenuBtn");
 
 const STORY_SLIDES = [
   { id: 'story1', caption: 'He died. An ordinary day. An ordinary ending.' },
@@ -74,10 +77,11 @@ function setToggleVisual(button, enabled) {
   button.setAttribute('aria-pressed', String(enabled));
 }
 
-function syncMenuAudioButtons() {
-  if (!menuSoundToggle || !menuMusicToggle) return;
-  setToggleVisual(menuSoundToggle, audioState.soundEnabled);
-  setToggleVisual(menuMusicToggle, audioState.musicEnabled);
+function syncAudioButtons() {
+  if (menuSoundToggle) setToggleVisual(menuSoundToggle, audioState.soundEnabled);
+  if (menuMusicToggle) setToggleVisual(menuMusicToggle, audioState.musicEnabled);
+  if (pauseSoundToggle) setToggleVisual(pauseSoundToggle, audioState.soundEnabled);
+  if (pauseMusicToggle) setToggleVisual(pauseMusicToggle, audioState.musicEnabled);
 }
 
 const CHARACTER_PRESETS = {
@@ -175,7 +179,7 @@ function startGame() {
 if (startMenu) startMenu.classList.toggle('hidden', !state.menuActive);
 if (characterSelect) characterSelect.classList.toggle('hidden', !state.characterSelectActive);
 if (skillsUI) skillsUI.classList.toggle('hidden', state.menuActive);
-syncMenuAudioButtons();
+syncAudioButtons();
 
 if (startBtn) startBtn.addEventListener('click', openCharacterSelect);
 if (storyBtn) storyBtn.addEventListener('click', () => { unlockAudio(); openStory(); });
@@ -189,13 +193,13 @@ characterCards.forEach(card => {
 if (menuSoundToggle) {
   menuSoundToggle.addEventListener('click', () => {
     setSoundEnabled(!audioState.soundEnabled);
-    syncMenuAudioButtons();
+    syncAudioButtons();
   });
 }
 if (menuMusicToggle) {
   menuMusicToggle.addEventListener('click', () => {
     setMusicEnabled(!audioState.musicEnabled);
-    syncMenuAudioButtons();
+    syncAudioButtons();
     if (!audioState.musicEnabled) {
       stopStoryAudio();
     } else if (storyActive) {
@@ -204,6 +208,18 @@ if (menuMusicToggle) {
     } else {
       menuMusic.volume = MENU_MUSIC_BASE_VOLUME;
     }
+  });
+}
+if (pauseSoundToggle) {
+  pauseSoundToggle.addEventListener('click', () => {
+    setSoundEnabled(!audioState.soundEnabled);
+    syncAudioButtons();
+  });
+}
+if (pauseMusicToggle) {
+  pauseMusicToggle.addEventListener('click', () => {
+    setMusicEnabled(!audioState.musicEnabled);
+    syncAudioButtons();
   });
 }
 
@@ -401,12 +417,89 @@ const overlay = document.getElementById("gameOverScreen");
 const finalScoreElem = document.getElementById("finalScore");
 
 const restartBtn = document.getElementById("restartBtn");
+const leaderboardList = document.getElementById("leaderboardList");
+const leaderboardEntry = document.getElementById("leaderboardEntry");
+const leaderboardName = document.getElementById("leaderboardName");
+const leaderboardSubmit = document.getElementById("leaderboardSubmit");
+const leaderboardNote = document.getElementById("leaderboardNote");
 
 const pauseMenu = document.getElementById("pauseMenu");
 
 const continueBtn = document.getElementById("continueBtn");
 
 let gameOverShown = false;
+const LEADERBOARD_KEY = 'mygame_leaderboard_v1';
+const LEADERBOARD_LIMIT = 10;
+let leaderboardSaved = false;
+
+function loadLeaderboard() {
+  try {
+    const raw = localStorage.getItem(LEADERBOARD_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(item => item && typeof item.name === 'string' && Number.isFinite(item.score))
+      .map(item => ({ name: item.name.slice(0, 3).toUpperCase(), score: Math.floor(item.score) }));
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveLeaderboard(list) {
+  try {
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list));
+  } catch (e) {}
+}
+
+function sortLeaderboard(list) {
+  return list.slice().sort((a, b) => b.score - a.score);
+}
+
+function renderLeaderboard(list) {
+  if (!leaderboardList) return;
+  leaderboardList.innerHTML = '';
+  if (!list.length) {
+    const li = document.createElement('li');
+    li.textContent = '---';
+    leaderboardList.appendChild(li);
+    return;
+  }
+  list.forEach(entry => {
+    const li = document.createElement('li');
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = entry.name;
+    const scoreSpan = document.createElement('span');
+    scoreSpan.textContent = entry.score;
+    li.appendChild(nameSpan);
+    li.appendChild(scoreSpan);
+    leaderboardList.appendChild(li);
+  });
+}
+
+function formatLeaderboardName(value) {
+  return (value || '').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 3);
+}
+
+function qualifiesForLeaderboard(score, list) {
+  if (list.length < LEADERBOARD_LIMIT) return true;
+  const sorted = sortLeaderboard(list);
+  return score > sorted[sorted.length - 1].score;
+}
+
+function submitLeaderboardScore(score, list) {
+  if (leaderboardSaved) return list;
+  const name = formatLeaderboardName(leaderboardName ? leaderboardName.value : '');
+  const finalName = name.length ? name : 'AAA';
+  const next = sortLeaderboard([...list, { name: finalName, score }]).slice(0, LEADERBOARD_LIMIT);
+  saveLeaderboard(next);
+  leaderboardSaved = true;
+  if (leaderboardEntry) leaderboardEntry.classList.add('hidden');
+  if (leaderboardNote) {
+    leaderboardNote.textContent = 'Saved!';
+    leaderboardNote.classList.remove('hidden');
+  }
+  return next;
+}
 
 
 
@@ -420,6 +513,23 @@ function showGameOver() {
   pauseMenu.classList.remove('visible');
 
   finalScoreElem.textContent = gameVars.score;
+  const currentScores = sortLeaderboard(loadLeaderboard());
+  renderLeaderboard(currentScores);
+  leaderboardSaved = false;
+  if (qualifiesForLeaderboard(gameVars.score, currentScores)) {
+    if (leaderboardEntry) leaderboardEntry.classList.remove('hidden');
+    if (leaderboardNote) leaderboardNote.classList.add('hidden');
+    if (leaderboardName) {
+      leaderboardName.value = '';
+      leaderboardName.focus();
+    }
+  } else {
+    if (leaderboardEntry) leaderboardEntry.classList.add('hidden');
+    if (leaderboardNote) {
+      leaderboardNote.textContent = 'Score not in top 10.';
+      leaderboardNote.classList.remove('hidden');
+    }
+  }
 
   overlay.style.visibility = 'visible';
   gameOverShown = true;
@@ -427,8 +537,28 @@ function showGameOver() {
 }
 
 restartBtn.addEventListener('click', () => location.reload());
+if (leaderboardName) {
+  leaderboardName.addEventListener('input', () => {
+    leaderboardName.value = formatLeaderboardName(leaderboardName.value);
+  });
+  leaderboardName.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const scores = sortLeaderboard(loadLeaderboard());
+      const next = submitLeaderboardScore(gameVars.score, scores);
+      renderLeaderboard(next);
+    }
+  });
+}
+if (leaderboardSubmit) {
+  leaderboardSubmit.addEventListener('click', () => {
+    const scores = sortLeaderboard(loadLeaderboard());
+    const next = submitLeaderboardScore(gameVars.score, scores);
+    renderLeaderboard(next);
+  });
+}
 
 continueBtn.addEventListener('click', () => setPaused(false));
+if (pauseMenuBtn) pauseMenuBtn.addEventListener('click', () => location.reload());
 
 
 
@@ -441,6 +571,7 @@ function setPaused(paused) {
   if (paused) {
 
     Object.keys(keys).forEach(key => delete keys[key]);
+    syncAudioButtons();
 
   }
 

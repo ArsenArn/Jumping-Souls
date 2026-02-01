@@ -276,7 +276,8 @@ class Heart {
     this.radius=15; this.collected=false; this.pulse=0;
     this.player = player;
     this.age = 0;
-    this.lifetime = 300; // ~5 seconds at 60 fps
+    const bonusSeconds = this.player.healLifetimeBonus || 0;
+    this.lifetime = 300 + bonusSeconds * 60; // ~5 seconds at 60 fps
     this.blinkDuration = 60; // last ~1 second
   }
   update() {
@@ -320,7 +321,7 @@ ctx.restore();
     this.speed = 5; // медленнее!
     this.exploded = false;
     this.radius = 40;
-    this.blastRadius = canvas.width / 5;
+    this.blastRadius = (canvas.width / 5) * 0.8;
     this.explodeY = canvas.height - groundHeight - 8;
     this.frame = 0;
   }

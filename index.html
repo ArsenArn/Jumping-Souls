@@ -52,13 +52,36 @@
 "></div>
 
   <div id="gameOverScreen">
-    <div>Game Over!</div>
-    <div>Your Score: <span id="finalScore"></span></div>
+    <div class="gameover-title">Game Over!</div>
+    <div class="gameover-score">Your Score: <span id="finalScore"></span></div>
+    <div id="leaderboardSection">
+      <div class="leaderboard-title">Top 10</div>
+      <ol id="leaderboardList" class="leaderboard-list"></ol>
+      <div id="leaderboardEntry" class="leaderboard-entry hidden">
+        <div class="leaderboard-note">New High Score! Enter 3 letters:</div>
+        <div class="leaderboard-input-row">
+          <input id="leaderboardName" maxlength="3" autocomplete="off" spellcheck="false" />
+          <button id="leaderboardSubmit">OK</button>
+        </div>
+      </div>
+      <div id="leaderboardNote" class="leaderboard-note hidden"></div>
+    </div>
     <button id="restartBtn">Restart</button>
   </div>
   <div id="pauseMenu">
+    <div id="pauseButtons">
+      <button id="pauseSoundToggle" class="icon-btn" aria-pressed="true" title="Sound">🔊</button>
+      <button id="pauseMusicToggle" class="icon-btn" aria-pressed="true" title="Music">🎵</button>
+    </div>
+    <div id="pauseTutorial">
+      <div class="tutorial-title">How to Play</div>
+      <div class="tutorial-line">⬅️ / ➡️ or A / D — Move</div>
+      <div class="tutorial-line">⬆️ or W or Space — Jump</div>
+      <div class="tutorial-line">🧠 Attack enemies only from above, or you take damage.</div>
+    </div>
     <div class="pause-title">Pause</div>
     <button id="continueBtn">Continue</button>
+    <button id="pauseMenuBtn">Menu</button>
   </div>
   <div id="upgradeMenu">
     <div id="upgradeTitle">Choose an upgrade!</div>
