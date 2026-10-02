@@ -1,5 +1,7 @@
 # Jumping Souls
 
+![Jumping Souls preview](jumping-souls-preview.png)
+
 A solo game-jam project developed in **48 hours** for **Global Game Jam 2026**.
 
 **[Play Jumping Souls](https://jumproguelike-arngames.netlify.app/)** · **[Global Game Jam entry](https://globalgamejam.org/games/2026/jumping-soul-8)**
