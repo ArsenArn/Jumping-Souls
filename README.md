@@ -1,6 +1,6 @@
 # Jumping Souls
 
-![Jumping Souls preview](jumping-souls-preview.png)
+![Jumping Souls preview](jumping-souls-preview.png.png)
 
 A solo game-jam project developed in **48 hours** for **Global Game Jam 2026**.
 
